@@ -5,6 +5,9 @@ mod idt;
 mod pic;
 mod timer;
 
+#[allow(unused_assignments, missing_copy_implementations, non_camel_case_types, dead_code)]
+pub mod cpuid;
+
 static IRQ_OFFSET: u8 = 0x20;
 
 #[repr(C)]

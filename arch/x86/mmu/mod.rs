@@ -1,3 +1,5 @@
+pub mod pae;
+
 extern
 {
 	static end: u32;
