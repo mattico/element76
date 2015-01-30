@@ -1,4 +1,5 @@
 use core::str::from_utf8_unchecked;
+use core::slice::SliceExt;
 use core::mem;
 
 // These globals are populated in setup() so they can be queried quickly
@@ -156,9 +157,10 @@ fn _get_vendor() -> &'static str {
 	bytes[9] 	= ((ecx >> 16) & 0xFF) as u8;
 	bytes[10] 	= ((ecx >> 8) & 0xFF) as u8;
 	bytes[11] 	= (ecx & 0xFF) as u8;
+	bytes.reverse();
 
 	unsafe {
-		from_utf8_unchecked(bytes).reverse()
+		from_utf8_unchecked(bytes)
 	}
 }
 
