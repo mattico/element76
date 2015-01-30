@@ -88,7 +88,7 @@ pub fn check_cpuid_support() -> bool {
 			pop %eax
 			xorl %eax, %esp
 			popfd
-			andl $$0x00200000, eax
+			andl $$0x00200000, %eax
 			movl $0, %eax"
 			: "=r"(res)
 			:
@@ -109,11 +109,11 @@ pub fn get_vendor() -> &'static str {
 
 	unsafe {
 		asm!("
-			movl $$0x0, eax
+			movl $$0x0, %eax
 			cpuid
-			movl $0, ebx
-			movl $1, ecx
-			movl $2, edx"
+			movl $0, %ebx
+			movl $1, %ecx
+			movl $2, %edx"
 			: "=r"(ebx), "=r"(ecx), "=r"(edx)
 			:
 			: "eax"
@@ -144,10 +144,10 @@ pub fn get_features() -> (u32, u32) {
 	let mut edx = 0u32;
 	unsafe {
 		asm!("
-			movl $$0x1, eax
+			movl $$0x1, %eax
 			cpuid
-			movl $0, ecx
-			movl $1, edx"
+			movl $0, %ecx
+			movl $1, %edx"
 			: "=r"(ecx), "=r"(edx)
 			:
 			: "eax"
