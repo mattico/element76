@@ -129,14 +129,14 @@ pub fn get_vendor() -> &'static str {
 
 fn _get_vendor() -> &'static str {
 	let mut ebx = 0u32;
-	let mut ecx = 0u32;
 	let mut edx = 0u32;
+	let mut ecx = 0u32;
 
 	unsafe {
 		asm!("
 			movl $$0x0, %eax
 			cpuid"
-			: "={ebx}"(ebx), "={ecx}"(ecx), "={edx}"(edx)
+			: "={ebx}"(ebx), "={edx}"(edx), "={ecx}"(ecx)
 			:
 			: "eax"
 			: "volatile"
@@ -148,17 +148,17 @@ fn _get_vendor() -> &'static str {
 	bytes[1] 	= ((ebx >> 16) & 0xFF) as u8;
 	bytes[2] 	= ((ebx >> 8) & 0xFF) as u8;
 	bytes[3] 	= (ebx & 0xFF) as u8;
-	bytes[4] 	= ((ecx >> 24) & 0xFF) as u8;
-	bytes[5] 	= ((ecx >> 16) & 0xFF) as u8;
-	bytes[6] 	= ((ecx >> 8) & 0xFF) as u8;
-	bytes[7] 	= (ecx & 0xFF) as u8;
-	bytes[8] 	= ((edx >> 24) & 0xFF) as u8;
-	bytes[9] 	= ((edx >> 16) & 0xFF) as u8;
-	bytes[10] 	= ((edx >> 8) & 0xFF) as u8;
-	bytes[11] 	= (edx & 0xFF) as u8;
+	bytes[4] 	= ((edx >> 24) & 0xFF) as u8;
+	bytes[5] 	= ((edx >> 16) & 0xFF) as u8;
+	bytes[6] 	= ((edx >> 8) & 0xFF) as u8;
+	bytes[7] 	= (edx & 0xFF) as u8;
+	bytes[8] 	= ((ecx >> 24) & 0xFF) as u8;
+	bytes[9] 	= ((ecx >> 16) & 0xFF) as u8;
+	bytes[10] 	= ((ecx >> 8) & 0xFF) as u8;
+	bytes[11] 	= (ecx & 0xFF) as u8;
 
 	unsafe {
-		from_utf8_unchecked(bytes)
+		from_utf8_unchecked(bytes).reverse()
 	}
 }
 
