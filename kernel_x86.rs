@@ -1,12 +1,8 @@
 #![crate_name = "kernel"]
 #![crate_type = "staticlib"]
 #![no_std]
-<<<<<<< HEAD
 #![feature(asm, lang_items)]
 #![feature(core)]
-=======
-#![feature(asm, lang_items, core)]
->>>>>>> Updated crate attributes to match upstream changes.
 
 extern crate core;
 extern crate rlibc;
