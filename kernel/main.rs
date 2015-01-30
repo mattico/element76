@@ -1,4 +1,5 @@
 use platform::vga::Color;
+use platform::cpu::cpuid::FeatureEnum;
 use kernel::stdio::StdioWriter;
 use core::fmt::Writer;
 
@@ -21,6 +22,24 @@ fn main()
 	printer.fg = Color::White;
 	printer.go_to(3, 3);
 	printer.print_screen("Hello, World!");
+	printer.go_to(3, 4);
+	if ::platform::cpu::cpuid::get_cpuid_supported() {
+		printer.print_screen("CPUID Supported");
+	} else {
+		printer.print_screen("CPUID Not Supported");
+	}
+	printer.go_to(3, 5);
+	if ::platform::cpu::cpuid::FeatureEDX::SSE.get_feature_supported() {
+		printer.print_screen("SSE Supported");
+	} else {
+		printer.print_screen("SSE Not Supported")
+	}
+	printer.go_to(3, 6);
+	if ::platform::cpu::cpuid::FeatureECX::AVX.get_feature_supported() {
+		printer.print_screen("AVX Supported");
+	} else {
+		printer.print_screen("AVX Not Supported")
+	}
 }
 
 #[lang = "panic_fmt"]

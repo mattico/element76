@@ -60,6 +60,7 @@ pub fn setup()
 	idt::init_idt();
     unsafe { enable_features(); }
 	timer::set_interval(50);
+	cpuid::setup();
 }
 
 #[no_mangle]

@@ -1,6 +1,13 @@
 use core::str::from_utf8_unchecked;
 use core::mem;
 
+// These globals are populated in setup() so they can be queried quickly
+// without having to run CPUID every time
+static mut VENDOR_STRING: &'static str = "\0";
+static mut FEATURES_ECX: u32 = 0;
+static mut FEATURES_EDX: u32 = 0;
+
+
 static VENDOR_OLDAMD:		&'static str = "AMDisbetter!";
 static VENDOR_AMD:			&'static str = "AuthenticAMD";
 static VENDOR_INTEL:		&'static str = "GenuineIntel";
@@ -76,18 +83,29 @@ pub enum FeatureEDX {
 	PBE		= 1 << 31,
 }
 
-pub fn check_cpuid_support() -> bool {
+pub fn setup() {
+	if get_cpuid_supported() {
+		unsafe {
+			VENDOR_STRING = _get_vendor();
+			let (ecx, edx) = _get_features();
+			FEATURES_ECX = ecx;
+			FEATURES_EDX = edx;
+		}
+	}
+}
+
+pub fn get_cpuid_supported() -> bool {
 	let mut res: u32 = 0;
 	unsafe {
 		asm!("
-			pushfd
-			pushfd
-			xorl $$0x00200000, %esp
-			popfd
-			pushfd
-			pop %eax
-			xorl %eax, %esp
-			popfd
+			pushfl
+			pushfl
+			xorl $$0x00200000, (%esp)
+			popfl
+			pushfl
+			popl %eax
+			xorl (%esp), %eax
+			popfl
 			andl $$0x00200000, %eax
 			movl $0, %eax"
 			: "=r"(res)
@@ -103,6 +121,12 @@ pub fn check_cpuid_support() -> bool {
 }
 
 pub fn get_vendor() -> &'static str {
+	unsafe {
+		VENDOR_STRING
+	}
+}
+
+fn _get_vendor() -> &'static str {
 	let mut ebx = 0u32;
 	let mut ecx = 0u32;
 	let mut edx = 0u32;
@@ -139,7 +163,7 @@ pub fn get_vendor() -> &'static str {
 	}
 }
 
-pub fn get_features() -> (u32, u32) {
+fn _get_features() -> (u32, u32) {
 	let mut ecx = 0u32;
 	let mut edx = 0u32;
 	unsafe {
@@ -157,30 +181,33 @@ pub fn get_features() -> (u32, u32) {
 	(ecx, edx)
 }
 
-pub trait IsFeatureEnum {
-	fn is_feature_supported(self) -> bool;
+
+// Usage:
+// FeatureECX::SSE3.get_feature_supported()
+pub trait FeatureEnum {
+	fn get_feature_supported(self) -> bool;
 }
 
-impl IsFeatureEnum for FeatureECX {
-	fn is_feature_supported(self) -> bool {
-		let (ecx, _) = get_features();
-
-		if ecx & (self as u32) > 0 {
-			true
-		} else {
-			false
+impl FeatureEnum for FeatureECX {
+	fn get_feature_supported(self) -> bool {
+		unsafe {
+			if FEATURES_ECX & (self as u32) > 0 {
+				true
+			} else {
+				false
+			}
 		}
 	}
 }
 
-impl IsFeatureEnum for FeatureEDX {
-	fn is_feature_supported(self) -> bool {
-		let (_, edx) = get_features();
-
-		if edx & (self as u32) > 0 {
-			true
-		} else {
-			false
+impl FeatureEnum for FeatureEDX {
+	fn get_feature_supported(self) -> bool {
+		unsafe {
+			if FEATURES_EDX & (self as u32) > 0 {
+				true
+			} else {
+				false
+			}
 		}
 	}
 }

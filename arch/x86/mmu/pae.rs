@@ -1,11 +1,7 @@
 use platform::cpu::cpuid;
-use platform::cpu::cpuid::IsFeatureEnum;
+use platform::cpu::cpuid::FeatureEnum;
 
 
 pub fn check_pae_support() -> bool {
-	if cpuid::check_cpuid_support() {
-		cpuid::FeatureEDX::PAE.is_feature_supported()
-	} else {
-		false
-	}
+	cpuid::FeatureEDX::PAE.get_feature_supported()
 }
