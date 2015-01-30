@@ -32,14 +32,16 @@ fn main()
 	if ::platform::cpu::cpuid::FeatureEDX::SSE.get_feature_supported() {
 		printer.print_screen("SSE Supported");
 	} else {
-		printer.print_screen("SSE Not Supported")
+		printer.print_screen("SSE Not Supported");
 	}
 	printer.go_to(3, 6);
 	if ::platform::cpu::cpuid::FeatureECX::AVX.get_feature_supported() {
 		printer.print_screen("AVX Supported");
 	} else {
-		printer.print_screen("AVX Not Supported")
+		printer.print_screen("AVX Not Supported");
 	}
+	printer.go_to(3, 7);
+	printer.print_screen(::platform::cpu::cpuid::get_vendor());
 }
 
 #[lang = "panic_fmt"]

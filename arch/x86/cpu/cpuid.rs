@@ -3,24 +3,25 @@ use core::mem;
 
 // These globals are populated in setup() so they can be queried quickly
 // without having to run CPUID every time
-static mut VENDOR_STRING: &'static str = "\0";
+static mut VENDOR_STRING: &'static str = VENDOR_INVALID;
 static mut FEATURES_ECX: u32 = 0;
 static mut FEATURES_EDX: u32 = 0;
 
 
-static VENDOR_OLDAMD:		&'static str = "AMDisbetter!";
-static VENDOR_AMD:			&'static str = "AuthenticAMD";
-static VENDOR_INTEL:		&'static str = "GenuineIntel";
-static VENDOR_VIA:			&'static str = "CentaurHauls";
-static VENDOR_OLDTRANSMETA:	&'static str = "TransmetaCPU";
-static VENDOR_TRANSMETA:	&'static str = "GenuineTMx86";
-static VENDOR_CYRIX:		&'static str = "CyrixInstead";
-static VENDOR_CENTAUR:		&'static str = "CentaurHauls";
-static VENDOR_NEXGEN:		&'static str = "NexGenDriven";
-static VENDOR_UMC:			&'static str = "UMC UMC UMC ";
-static VENDOR_SIS:			&'static str = "SiS SiS SiS ";
-static VENDOR_NSC:			&'static str = "Geode by NSC";
-static VENDOR_RISE:			&'static str = "RiseRiseRise";
+const VENDOR_OLDAMD:		&'static str = "AMDisbetter!";
+const VENDOR_AMD:			&'static str = "AuthenticAMD";
+const VENDOR_INTEL:			&'static str = "GenuineIntel";
+const VENDOR_VIA:			&'static str = "CentaurHauls";
+const VENDOR_OLDTRANSMETA:	&'static str = "TransmetaCPU";
+const VENDOR_TRANSMETA:		&'static str = "GenuineTMx86";
+const VENDOR_CYRIX:			&'static str = "CyrixInstead";
+const VENDOR_CENTAUR:		&'static str = "CentaurHauls";
+const VENDOR_NEXGEN:		&'static str = "NexGenDriven";
+const VENDOR_UMC:			&'static str = "UMC UMC UMC ";
+const VENDOR_SIS:			&'static str = "SiS SiS SiS ";
+const VENDOR_NSC:			&'static str = "Geode by NSC";
+const VENDOR_RISE:			&'static str = "RiseRiseRise";
+const VENDOR_INVALID:		&'static str = "INVALIDVEND!";
 
 pub enum FeatureECX {
 	SSE3		= 1 << 0,
@@ -106,11 +107,11 @@ pub fn get_cpuid_supported() -> bool {
 			popl %eax
 			xorl (%esp), %eax
 			popfl
-			andl $$0x00200000, %eax
-			movl $0, %eax"
-			: "=r"(res)
+			andl $$0x00200000, %eax"
+			: "={eax}"(res)
 			:
-			: "eax", "esp"
+			: "esp"
+			: "volatile"
 		);
 	}
 	if res == 0 {
@@ -134,13 +135,11 @@ fn _get_vendor() -> &'static str {
 	unsafe {
 		asm!("
 			movl $$0x0, %eax
-			cpuid
-			movl $0, %ebx
-			movl $1, %ecx
-			movl $2, %edx"
-			: "=r"(ebx), "=r"(ecx), "=r"(edx)
+			cpuid"
+			: "={ebx}"(ebx), "={ecx}"(ecx), "={edx}"(edx)
 			:
 			: "eax"
+			: "volatile"
 		);
 	}
 
@@ -169,12 +168,11 @@ fn _get_features() -> (u32, u32) {
 	unsafe {
 		asm!("
 			movl $$0x1, %eax
-			cpuid
-			movl $0, %ecx
-			movl $1, %edx"
-			: "=r"(ecx), "=r"(edx)
+			cpuid"
+			: "={ecx}"(ecx), "={edx}"(edx)
 			:
 			: "eax"
+			: "volatile"
 		);
 	}
 
