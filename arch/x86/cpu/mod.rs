@@ -5,7 +5,7 @@ mod idt;
 mod pic;
 mod timer;
 
-#[allow(unused_assignments, missing_copy_implementations, non_camel_case_types, dead_code)]
+#[allow(unused_assignments, missing_copy_implementations, non_camel_case_types, dead_code, unused_variable)]
 pub mod cpuid;
 
 static IRQ_OFFSET: u8 = 0x20;
@@ -60,7 +60,7 @@ pub fn setup()
 	idt::init_idt();
     unsafe { enable_features(); }
 	timer::set_interval(50);
-	cpuid::setup();
+	// cpuid::setup();
 }
 
 #[no_mangle]

@@ -1,5 +1,5 @@
 use platform::vga::Color;
-use platform::cpu::cpuid::FeatureEnum;
+// use platform::cpu::cpuid::FeatureEnum;
 use kernel::stdio::StdioWriter;
 use core::fmt::Writer;
 
@@ -23,6 +23,7 @@ fn main()
 	printer.go_to(3, 3);
 	printer.print_screen("Hello, World!");
 	printer.go_to(3, 4);
+	/*
 	if ::platform::cpu::cpuid::get_cpuid_supported() {
 		printer.print_screen("CPUID Supported");
 	} else {
@@ -42,6 +43,7 @@ fn main()
 	}
 	printer.go_to(3, 7);
 	printer.print_screen(::platform::cpu::cpuid::get_vendor());
+	*/
 }
 
 #[lang = "panic_fmt"]
