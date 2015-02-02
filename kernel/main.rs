@@ -1,8 +1,8 @@
-use core::prelude::*;
 use platform::vga::Color;
 use kernel::stdio::StdioWriter;
 use core::fmt::Writer;
 use platform::serial;
+use core::result::Result::*;
 
 #[no_mangle]
 pub fn entry() -> !
@@ -24,10 +24,16 @@ fn main()
 	printer.go_to(3, 3);
 	printer.print_screen("Hello, World!");
 
-	let mut com = serial::new(serial::COM1, serial::BaudRate::b115200, serial::DataBit::b8,
-		serial::StopBit::b2, serial::Parity::none, 0);
+	let mut com = serial::SerialPort::new(serial::DefaultPort::COM1, serial::BaudRate::B115200,
+		serial::DataBit::B8, serial::StopBit::B2, serial::Parity::None, 0);
 	com.setup();
-	com.write_str("Serial Works!");
+	match com.write_str("Serial Works!") {
+		Ok(_) => {},
+		Err(_) => {
+			printer.go_to(3, 4);
+			printer.print_screen("Serial Doesn't work...");
+		},
+	}
 }
 
 #[lang = "panic_fmt"]

@@ -1,16 +1,19 @@
 use platform::io;
-use core::prelude::{Ok, Copy};
+use core::prelude::Ok;
 use core::fmt::{Writer, Result};
 use core::str::StrExt;
 use core::clone::Clone;
 
-
 // These should really be found from the bios data area
-pub const COM1: u16 = 0x3F8;
-pub const COM2: u16 = 0x2F8;
-pub const COM3: u16 = 0x3E8;
-pub const COM4: u16 = 0x2E8;
+#[allow(non_upper_case_globals, non_snake_case)]
+pub mod DefaultPort {
+	pub const COM1: u16 = 0x3F8;
+	pub const COM2: u16 = 0x2F8;
+	pub const COM3: u16 = 0x3E8;
+	pub const COM4: u16 = 0x2E8;
+}
 
+// Register offsets
 const DATA: u16 = 0;
 const INTERRUPT_ENABLE: u16 = 1;
 const INTERRUPT_IDENTIFICATION: u16 = 2;
@@ -20,56 +23,59 @@ const LINE_STATUS: u16 = 5;
 const MODEM_STATUS: u16 = 6;
 const SCRATCH: u16 = 7;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum BaudRate {
-	b115200 = 1,
-	b57600 = 2,
-	b38400 = 3,
-	b28800 = 4,
-	b19200 = 6,
-	b14400 = 8,
-	b9600 = 12,
-	b4800 = 24,
-	b2400 = 48,
-	b1200 = 96,
-	b600 = 192,
-	b300 = 384,
-	b220 = 524,
-	b110 = 1047,
-	b50 = 2304,
+	B115200 = 1,
+	B57600 = 2,
+	B38400 = 3,
+	B28800 = 4,
+	B19200 = 6,
+	B14400 = 8,
+	B9600 = 12,
+	B4800 = 24,
+	B2400 = 48,
+	B1200 = 96,
+	B600 = 192,
+	B300 = 384,
+	B220 = 524,
+	B110 = 1047,
+	B50 = 2304,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum DataBit {
-	b5 = 0b00,
-	b6 = 0b01,
-	b7 = 0b10,
-	b8 = 0b11,
+	B5 = 0b00,
+	B6 = 0b01,
+	B7 = 0b10,
+	B8 = 0b11,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum StopBit {
-	b1 = 0b0,
-	b2 = 0b1,
+	B1 = 0b0,
+	B2 = 0b1,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum Parity {
-	none 	= 0b0000,
-	odd 	= 0b0001,
-	even	= 0b0011,
-	mark	= 0b0101,
-	space	= 0b0111,
+	None	= 0b0000,
+	Odd		= 0b0001,
+	Even	= 0b0011,
+	Mark	= 0b0101,
+	Space	= 0b0111,
 }
 
-pub mod interrupts {
-	pub const DATA_AVAILABLE: u8 = (0 << 1);
-	pub const TRANSMITTER_EMPTY: u8 = (1 << 1);
-	pub const BREAK: u8 = (2 << 1);
-	pub const STATUS_CHANGE: u8 = (3 << 1);
+#[allow(non_upper_case_globals, non_snake_case)]
+pub mod Interrupt {
+	pub const DataAvailable: u8 = (1 << 0);
+	pub const TransmitterEmpty: u8 = (1 << 1);
+	pub const RecieverLineStatus: u8 = (1 << 2);
+	pub const ModemStatus: u8 = (1 << 3);
+	pub const Sleep: u8 = (1 << 4);
+	pub const LowPower: u8 = (1 << 5);
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct SerialPort {
 	port: u16,
 	baud_rate: BaudRate,
@@ -79,19 +85,20 @@ pub struct SerialPort {
 	interrupts: u8,
 }
 
-pub fn new(port: u16, baud_rate: BaudRate, data_bits: DataBit,
-		stop_bits: StopBit, parity: Parity, interrupts: u8) -> SerialPort {
-	SerialPort {
-		port: port,
-		baud_rate: baud_rate,
-		data_bits: data_bits,
-		stop_bits: stop_bits,
-		parity: parity,
-		interrupts: interrupts,
-	}
-}
-
 impl SerialPort {
+
+	pub fn new(port: u16, baud_rate: BaudRate, data_bits: DataBit,
+		stop_bits: StopBit, parity: Parity, interrupts: u8) -> SerialPort {
+		SerialPort {
+			port: port,
+			baud_rate: baud_rate,
+			data_bits: data_bits,
+			stop_bits: stop_bits,
+			parity: parity,
+			interrupts: interrupts,
+		}
+	}
+
 	// http://wiki.osdev.org/Serial_Ports
 	// http://en.wikibooks.org/wiki/Serial_Programming/8250_UART_Programming
 	pub fn setup(&self) {
@@ -102,7 +109,7 @@ impl SerialPort {
 			io::outport(self.port + INTERRUPT_ENABLE, 0x00); 		// Disable interrupts
 			io::outport(self.port + LINE_CONTROL, 0x80); 			// Enable DLAB
 			io::outport(self.port + DATA, (br & 0xFF) as u8); 			// Set divisor low byte
-			io::outport(self.port + INTERRUPT_ENABLE, (br << 8) as u8); // set divisor high byte
+			io::outport(self.port + INTERRUPT_ENABLE, (br >> 8) as u8); // set divisor high byte
 			io::outport(self.port + LINE_CONTROL, lc);
 			io::outport(self.port + INTERRUPT_IDENTIFICATION, 0xC7); // TODO: Control this, and the other stuff.
 			io::outport(self.port + MODEM_CONTROL, 0x0B);
