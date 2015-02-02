@@ -14,6 +14,8 @@ pub mod platform {
 	pub mod mmu;
 	mod io;
 	pub mod keyboard;
+	#[allow(dead_code)]
+	pub mod serial;
 }
 
 pub mod kernel {
@@ -21,6 +23,11 @@ pub mod kernel {
 	pub mod interrupts;
 	mod stdio;
 	mod keyboard;
+}
+
+// https://github.com/rust-lang/rust/issues/16803 ?
+pub mod std {
+	pub use core::*;
 }
 
 #[lang = "stack_exhausted"] extern fn stack_exhausted() {}
