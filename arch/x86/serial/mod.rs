@@ -116,28 +116,28 @@ impl SerialPort {
 		}
 	}
 
-	pub fn serial_received(&self) -> bool {
+	pub fn received(&self) -> bool {
 		unsafe {
 			io::inport(self.port + LINE_STATUS) & 1 > 0
 		}
 	}
 
-	pub fn read_serial(&self) -> u8 {
-		while !self.serial_received() {}
+	pub fn read(&self) -> u8 {
+		while !self.received() {}
 
 		unsafe {
 			io::inport(self.port)
 		}
 	}
 
-	pub fn is_transmit_empty(&self) -> bool {
+	pub fn is_empty(&self) -> bool {
 		unsafe {
 			io::inport(self.port + LINE_STATUS) & 0x20 > 1
 		}
 	}
 
-	pub fn write_serial(&self, a: u8) {
-		while !self.is_transmit_empty() {}
+	pub fn write(&self, a: u8) {
+		while !self.is_empty() {}
 
 		unsafe {
 			io::outport(self.port, a);
@@ -148,9 +148,12 @@ impl SerialPort {
 impl Writer for SerialPort {
 	fn write_str(&mut self, s: &str) -> Result {
 		for c in s.chars() {
-			self.write_serial(c as u8);
+			self.write(c as u8);
 		}
 		Ok(())
 	}
 }
 
+pub fn interrupt_handler(serial_port: u8) {
+
+}

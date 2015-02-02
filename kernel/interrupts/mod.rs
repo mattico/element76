@@ -3,6 +3,7 @@ use platform::vga::Color;
 
 mod timer;
 mod keyboard;
+mod serial;
 
 pub fn handle_interrupt(interrupt_number: u32, error_code: u32)
 {
@@ -10,6 +11,8 @@ pub fn handle_interrupt(interrupt_number: u32, error_code: u32)
 	{
 		0x20 => timer::handle_irq(),
 		0x21 => keyboard::keyboard_irq(),
+		0x22 =>	serial::serial1_irq(),
+		0x23 => serial::serial2_irq(),
 		_ => unknown_irq(interrupt_number, error_code),
 	};
 }
