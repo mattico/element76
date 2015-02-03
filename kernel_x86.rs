@@ -6,6 +6,7 @@
 
 extern crate core;
 extern crate rlibc;
+extern crate cpuid;
 
 #[path = "arch/x86/"]
 pub mod platform {

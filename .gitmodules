@@ -1,3 +1,6 @@
 [submodule "rlibc"]
 	path = rlibc
 	url = https://github.com/rust-lang/rlibc.git
+[submodule "rust-cpuid"]
+	path = rust-cpuid
+	url = https://github.com/mattico/rust-cpuid.git

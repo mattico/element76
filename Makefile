@@ -5,7 +5,7 @@ LD?=ld
 
 ARCH_DEPENDENCIES=$(wildcard arch/x86/*/*.rs)
 KERNEL_DEPENDENCIES=$(wildcard kernel/*.rs) $(wildcard kernel/*/*.rs)
-RUST_DEPENDENCIES=$(ARCH_DEPENDENCIES) $(KERNEL_DEPENDENCIES) bin/librlibc.rlib
+RUST_DEPENDENCIES=$(ARCH_DEPENDENCIES) $(KERNEL_DEPENDENCIES) bin/librlibc.rlib bin/rust-cpuid.rlib
 ASSEMBLIES=$(patsubst %.asm, %.o, $(wildcard arch/x86/asm/*.asm))
 TARGET=i686-unknown-linux-gnu
 RUSTLIB=bin/libkernel.a
@@ -20,12 +20,12 @@ run: $(BINARY)
 
 .PHONY: clean
 clean:
-	$(RM) $(BINARY) *.o $(ASSEMBLIES) $(RUSTLIB) bin/librlibc.rlib
+	$(RM) $(BINARY) *.o $(ASSEMBLIES) $(RUSTLIB) bin/librlibc.rlib bin/rust-cpuid.rlib
 
 $(ASSEMBLIES): %.o : %.asm
 	$(NASM) -f elf32 -o $@ $<
 
-$(RUSTLIB): kernel_x86.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib
+$(RUSTLIB): kernel_x86.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib bin/rust-cpuid.rlib
 	$(RUSTC) -L rustlibdir -L bin $(RUSTC_OPTIONS) $< --out-dir=bin
 
 $(BINARY): $(ASSEMBLIES) $(RUSTLIB)
@@ -33,3 +33,6 @@ $(BINARY): $(ASSEMBLIES) $(RUSTLIB)
 
 bin/librlibc.rlib: rlibc/src/lib.rs
 	$(RUSTC) -L rustlibdir --out-dir=bin --crate-type=rlib --crate-name=rlibc $(RUSTC_OPTIONS) $<
+
+bin/rust-cpuid.rlib: rust-cpuid/src/lib.rs
+	$(RUSTC) -L rustlibdir --out-dir=bin --crate-type=rlib --crate-name=cpuid $(RUSTC_OPTIONS) $<
