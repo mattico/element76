@@ -25,7 +25,7 @@ clean:
 $(ASSEMBLIES): %.o : %.asm
 	$(NASM) -f elf32 -o $@ $<
 
-$(RUSTLIB): kernel_x86.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib
+$(RUSTLIB): kernel.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib
 	$(RUSTC) -L rustlibdir -L bin $(RUSTC_OPTIONS) $< --out-dir=bin
 
 $(BINARY): $(ASSEMBLIES) $(RUSTLIB)
