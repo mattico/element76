@@ -7,7 +7,18 @@
 extern crate core;
 extern crate rlibc;
 
+#[cfg(target_arch = "x86")]
 #[path = "arch/x86/"]
+pub mod platform {
+	pub mod vga;
+	pub mod cpu;
+	pub mod mmu;
+	mod io;
+	pub mod keyboard;
+}
+
+#[cfg(target_arch = "x86_64")]
+#[path = "arch/x86_64/"]
 pub mod platform {
 	pub mod vga;
 	pub mod cpu;
