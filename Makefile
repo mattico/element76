@@ -10,23 +10,24 @@ LD_FLAGS=
 # Possible Targets:
 # i686-unknown-linux-gnu
 # x86_64-unknown-linux-gnu
-TARGET=i686-unknown-linux-gnu
+ARCH=x86_64
 
-ifeq ($(TARGET), i686-unknown-linux-gnu)
-ARCH=x86
+ifeq ($(ARCH), x86)
+TARGET=i686-unknown-linux-gnu
 RUSTC_FLAGS += --target $(TARGET) -L rustlibdir
 NASM_FLAGS += -f elf32
 LD_FLAGS += -m elf_i386
-else ifeq ($(TARGET), x86_64-unknown-linux-gnu)
-ARCH=x86_64
+QEMU=qemu-system-i386
+else ifeq ($(ARCH), x86_64)
+TARGET=x86_64-unknown-linux-gnu
 RUSTC_FLAGS += --target $(TARGET)
 NASM_FLAGS += -f elf64
 LD_FLAGS += -m elf_x86_64
+QEMU=qemu-system-x86_64
 endif
 
 # Recursive Wildcard Function
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
-
 
 ARCH_DEPENDENCIES := $(shell find arch/$(ARCH)/ -type f -name '*.rs')
 KERNEL_DEPENDENCIES := $(shell find kernel/ -type f -name '*.rs')
@@ -51,10 +52,10 @@ release: BINARY := RELEASE_BIN
 
 .PHONY: run
 run: $(DEBUG_BIN)
-	qemu-system-i386 -curses -kernel $<
+	$(QEMU) -curses -kernel $<
 
 release-run: $(RELEASE_BIN)
-	qemu-system-i386 -curses -kernel $<
+	$(QEMU) -curses -kernel $<
 
 .PHONY: clean
 clean:
