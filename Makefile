@@ -7,9 +7,9 @@ KERNEL_RUSTC_FLAGS=
 NASM_FLAGS=
 LD_FLAGS=
 
-# Possible Targets:
-# i686-unknown-linux-gnu
-# x86_64-unknown-linux-gnu
+# Possible Arches:
+# x86
+# x86_64
 ARCH=x86_64
 
 ifeq ($(ARCH), x86)
@@ -20,7 +20,7 @@ LD_FLAGS += -m elf_i386
 QEMU=qemu-system-i386
 else ifeq ($(ARCH), x86_64)
 TARGET=x86_64-unknown-linux-gnu
-RUSTC_FLAGS += --target $(TARGET)
+RUSTC_FLAGS += --target $(TARGET) -l rustlibdir_x64
 NASM_FLAGS += -f elf64
 LD_FLAGS += -m elf_x86_64
 QEMU=qemu-system-x86_64
@@ -68,10 +68,10 @@ $(RUSTLIB): kernel.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib
 	$(RUSTC) $(RUSTC_FLAGS) $(KERNEL_RUSTC_FLAGS) -L bin $< --out-dir=bin
 
 $(RELEASE_BIN): $(ASSEMBLIES) $(RUSTLIB)
-	$(LD) $(LD_FLAGS) --gc-sections -T link.ld -o $@ $^
+	$(LD) $(LD_FLAGS) -T link.ld -o $@ $^
 
 $(DEBUG_BIN): $(ASSEMBLIES) $(RUSTLIB)
-	$(LD) $(LD_FLAGS) --gc-sections -T link.ld -o $@ $^
+	$(LD) $(LD_FLAGS) -T link.ld -o $@ $^
 
 bin/librlibc.rlib: rlibc/src/lib.rs
 	$(RUSTC) $(RUSTC_FLAGS) --out-dir=bin --crate-type=rlib --crate-name=rlibc $(RUSTC_OPTIONS) $<
