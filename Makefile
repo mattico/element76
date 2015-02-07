@@ -2,15 +2,15 @@ RUSTC?=rustc
 NASM?=nasm
 LD?=ld
 
-RUSTC_FLAGS=
-KERNEL_RUSTC_FLAGS=
-NASM_FLAGS=
-LD_FLAGS=
+RUSTC_FLAGS?=
+KERNEL_RUSTC_FLAGS?=
+NASM_FLAGS?=
+LD_FLAGS?=
 
 # Possible Arches:
 # x86
 # x86_64
-ARCH=x86_64
+ARCH?=x86
 
 ifeq ($(ARCH), x86)
 TARGET=i686-unknown-linux-gnu
