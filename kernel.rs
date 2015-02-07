@@ -4,7 +4,7 @@
 #![feature(asm, lang_items)]
 #![feature(core)]
 
-extern crate core;
+#[macro_use] extern crate core;
 extern crate rlibc;
 
 #[cfg(target_arch = "x86")]
