@@ -3,7 +3,7 @@ NASM?=nasm
 LD?=ld
 
 RUSTC_FLAGS?=
-KERNEL_RUSTC_FLAGS?=
+KERNEL_RUSTC_FLAGS?=-L bin
 NASM_FLAGS?=
 LD_FLAGS?=
 
@@ -20,7 +20,7 @@ LD_FLAGS += -m elf_i386
 QEMU=qemu-system-i386
 else ifeq ($(ARCH), x86_64)
 TARGET=x86_64-unknown-linux-gnu
-RUSTC_FLAGS += --target $(TARGET) -l rustlibdir_x64
+RUSTC_FLAGS += --target $(TARGET)
 NASM_FLAGS += -f elf64
 LD_FLAGS += -m elf_x86_64
 QEMU=qemu-system-x86_64
@@ -29,10 +29,10 @@ endif
 # Recursive Wildcard Function
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
-ARCH_DEPENDENCIES := $(shell find arch/$(ARCH)/ -type f -name '*.rs')
-KERNEL_DEPENDENCIES := $(shell find kernel/ -type f -name '*.rs')
+ARCH_DEPENDENCIES := $(call rwildcard,arch/$(ARCH)/,*.rs)
+KERNEL_DEPENDENCIES := $(call rwildcard,kernel/,*.rs)
 RUST_DEPENDENCIES := $(ARCH_DEPENDENCIES) $(KERNEL_DEPENDENCIES) bin/librlibc.rlib
-ASSEMBLIES := $(patsubst %.asm, %.o, $(shell find arch/$(ARCH)/ -type f -name '*.asm'))
+ASSEMBLIES := $(patsubst %.asm, %.o, $(call rwildcard,arch/$(ARCH)/,*.asm))
 RUSTLIB := bin/libkernel.a
 DEBUG_BIN := bin/kernel.elf
 RELEASE_BIN := bin/kernel.bin
@@ -54,6 +54,7 @@ release: BINARY := RELEASE_BIN
 run: $(DEBUG_BIN)
 	$(QEMU) -curses -kernel $<
 
+.PHONY: release-run
 release-run: $(RELEASE_BIN)
 	$(QEMU) -curses -kernel $<
 
@@ -65,7 +66,7 @@ $(ASSEMBLIES): %.o : %.asm
 	$(NASM) $(NASM_FLAGS) -o $@ $<
 
 $(RUSTLIB): kernel.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib
-	$(RUSTC) $(RUSTC_FLAGS) $(KERNEL_RUSTC_FLAGS) -L bin $< --out-dir=bin
+	$(RUSTC) $(RUSTC_FLAGS) $(KERNEL_RUSTC_FLAGS) $< --out-dir=bin
 
 $(RELEASE_BIN): $(ASSEMBLIES) $(RUSTLIB)
 	$(LD) $(LD_FLAGS) -T link.ld -o $@ $^
