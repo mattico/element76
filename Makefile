@@ -5,7 +5,7 @@ LD?=ld
 RUSTC_FLAGS?=
 KERNEL_RUSTC_FLAGS?=-L bin
 NASM_FLAGS?=
-LD_FLAGS?=
+LD_FLAGS?=--gc-sections
 
 # Possible Arches:
 # x86
