@@ -14,13 +14,13 @@ ARCH?=x86
 
 ifeq ($(ARCH), x86)
 TARGET=i686-unknown-linux-gnu
-RUSTC_FLAGS += --target $(TARGET) -L rustlibdir
+RUSTC_FLAGS += --target $(TARGET) -L rustlib-$(TARGET)
 NASM_FLAGS += -f elf32
 LD_FLAGS += -m elf_i386
 QEMU=qemu-system-i386
 else ifeq ($(ARCH), x86_64)
 TARGET=x86_64-unknown-linux-gnu
-RUSTC_FLAGS += --target $(TARGET)
+RUSTC_FLAGS += --target $(TARGET) -L rustlib-$(TARGET)
 NASM_FLAGS += -f elf64
 LD_FLAGS += -m elf_x86_64
 QEMU=qemu-system-x86_64
@@ -49,6 +49,10 @@ release: RUSTC_FLAGS += -O
 release: KERNEL_RUSTC_FLAGS += -C lto
 release: LD_FLAGS += -S
 release: BINARY := RELEASE_BIN
+
+.PHONY: download
+download:
+	./downloadrustlibdir.sh $(TARGET)
 
 .PHONY: run
 run: $(DEBUG_BIN)
