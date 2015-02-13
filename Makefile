@@ -1,7 +1,6 @@
 RUSTC?=rustc
 NASM?=nasm
 LD?=ld
-QEMU?=qemu-system-i386
 
 RUSTC_FLAGS?=
 KERNEL_RUSTC_FLAGS?=-L bin
@@ -15,12 +14,6 @@ ARCH?=x86
 
 ifeq ($(ARCH), x86)
 TARGET=i686-unknown-linux-gnu
-<<<<<<< HEAD
-RUSTLIB=bin/libkernel.a
-BINARY=bin/kernel.bin
-DEBUG=bin/kernel.sym
-RUSTC_OPTIONS=--target $(TARGET)
-=======
 RUSTC_FLAGS += --target $(TARGET) -L rustlib-$(TARGET)
 NASM_FLAGS += -f elf32
 LD_FLAGS += -m elf_i386
@@ -46,7 +39,6 @@ RELEASE_BIN := bin/kernel.bin
 BINARY := $(DEBUG_BIN)
 
 all: debug
->>>>>>> 6ddc47e6bd5e6b856e3856be94dc542b570f55d7
 
 debug: $(DEBUG_BIN)
 debug: RUSTC_FLAGS += -g
@@ -62,23 +54,7 @@ release: BINARY := RELEASE_BIN
 download:
 	./downloadrustlibdir.sh $(TARGET)
 
-debug: RUSTC += -g
-debug: QEMU += -s -S
-debug: $(BINARY) $(DEBUG)
-
-release: RUSTC += -O
-release: LD += -S
-release: $(BINARY)
-
 .PHONY: run
-<<<<<<< HEAD
-run: $(BINARY)
-	$(QEMU) -kernel $<
-
-.PHONY: clean
-clean:
-	$(RM) $(BINARY) $(DEBUG) *.o $(ASSEMBLIES) $(RUSTLIB) bin/librlibc.rlib bin/kernel.elf
-=======
 run: $(DEBUG_BIN)
 	$(QEMU) -curses -kernel $<
 
@@ -89,7 +65,6 @@ release-run: $(RELEASE_BIN)
 .PHONY: clean
 clean:
 	$(RM) $(DEBUG_BIN) $(RELEASE_BIN) *.o $(ASSEMBLIES) $(RUSTLIB) bin/librlibc.rlib bin/*.deflate
->>>>>>> 6ddc47e6bd5e6b856e3856be94dc542b570f55d7
 
 $(ASSEMBLIES): %.o : %.asm
 	$(NASM) $(NASM_FLAGS) -o $@ $<
@@ -102,10 +77,6 @@ $(RELEASE_BIN): $(ASSEMBLIES) $(RUSTLIB)
 
 $(DEBUG_BIN): $(ASSEMBLIES) $(RUSTLIB)
 	$(LD) $(LD_FLAGS) -T link.ld -o $@ $^
-
-$(DEBUG): $(ASSEMBLIES) $(RUSTLIB)
-	$(LD) --gc-sections -m elf_i386 -T link.ld -o bin/kernel.elf $^
-	objcopy --only-keep-debug bin/kernel.elf $@
 
 bin/librlibc.rlib: rlibc/src/lib.rs
 	$(RUSTC) $(RUSTC_FLAGS) --out-dir=bin --crate-type=rlib --crate-name=rlibc $(RUSTC_OPTIONS) $<
