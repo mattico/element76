@@ -1,3 +1,8 @@
 *.o
-bin/
-rustlibdir
+bin/libkernel.a
+bin/kernel.bin
+bin/librlibc.rlib
+rustlib*
+bin
+
+*.sublime*

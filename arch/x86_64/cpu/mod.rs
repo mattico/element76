@@ -6,9 +6,6 @@ mod pic;
 mod timer;
 mod features;
 
-#[allow(unused_assignments, missing_copy_implementations, non_camel_case_types, dead_code, unused_variable)]
-pub mod cpuid;
-
 static IRQ_OFFSET: u8 = 0x20;
 
 #[repr(C)]
@@ -57,11 +54,10 @@ pub fn setup()
 	pic::remap_pic(IRQ_OFFSET);
 	idt::init_idt();
 	timer::set_interval(50);
-	// cpuid::setup();
 }
 
 #[no_mangle]
-pub extern "C" fn isr_handler(args: &InterruptArguments, _fpu_sse_data: [u8; 512])
+pub extern "C" fn isr_handler(args: &InterruptArguments, fxdata: [u8; 512])
 {
 	::kernel::interrupts::handle_interrupt(args.interrupt_number, args.error_code);
 

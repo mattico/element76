@@ -1,7 +1,7 @@
 element76
 =========
 
-[![Build Status](https://travis-ci.org/mvdnes/element76.png?branch=master)](https://travis-ci.org/mvdnes/element76)
+[![Build Status](https://travis-ci.org/mattico/element76.png?branch=master)](https://travis-ci.org/mattico/element76)
 
 An operating system written in Rust
 
