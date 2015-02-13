@@ -31,7 +31,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 ARCH_DEPENDENCIES := $(call rwildcard,arch/$(ARCH)/,*.rs)
 KERNEL_DEPENDENCIES := $(call rwildcard,kernel/,*.rs)
-RUST_DEPENDENCIES := $(ARCH_DEPENDENCIES) $(KERNEL_DEPENDENCIES) bin/librlibc.rlib
+RUST_DEPENDENCIES := $(ARCH_DEPENDENCIES) $(KERNEL_DEPENDENCIES) bin/librlibc.rlib bin/rust-cpuid.rlib
 ASSEMBLIES := $(patsubst %.asm, %.o, $(call rwildcard,arch/$(ARCH)/,*.asm))
 RUSTLIB := bin/libkernel.a
 DEBUG_BIN := bin/kernel.elf
@@ -64,7 +64,7 @@ release-run: $(RELEASE_BIN)
 
 .PHONY: clean
 clean:
-	$(RM) $(DEBUG_BIN) $(RELEASE_BIN) *.o $(ASSEMBLIES) $(RUSTLIB) bin/librlibc.rlib bin/*.deflate
+	$(RM) $(DEBUG_BIN) $(RELEASE_BIN) *.o $(ASSEMBLIES) $(RUSTLIB) bin/librlibc.rlib bin/rust-cpuid.rlib bin/*.deflate
 
 $(ASSEMBLIES): %.o : %.asm
 	$(NASM) $(NASM_FLAGS) -o $@ $<
@@ -80,3 +80,6 @@ $(DEBUG_BIN): $(ASSEMBLIES) $(RUSTLIB)
 
 bin/librlibc.rlib: rlibc/src/lib.rs
 	$(RUSTC) $(RUSTC_FLAGS) --out-dir=bin --crate-type=rlib --crate-name=rlibc $(RUSTC_OPTIONS) $<
+
+bin/rust-cpuid.rlib: rust-cpuid/src/lib.rs
+	$(RUSTC) $(RUSTC_FLAGS) --out-dir=bin --crate-type=rlib --crate-name=cpuid $(RUSTC_OPTIONS) $<

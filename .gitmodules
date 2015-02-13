@@ -4,3 +4,4 @@
 [submodule "rust-cpuid"]
 	path = rust-cpuid
 	url = https://github.com/mattico/rust-cpuid.git
+	branch = element76
