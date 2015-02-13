@@ -1,14 +1,25 @@
 #![crate_name = "kernel"]
 #![crate_type = "staticlib"]
 #![no_std]
-#![feature(asm, lang_items)]
+#![feature(no_std, asm, lang_items)]
 #![feature(core)]
 
-extern crate core;
+#[macro_use] extern crate core;
 extern crate rlibc;
 extern crate cpuid;
 
+#[cfg(target_arch = "x86")]
 #[path = "arch/x86/"]
+pub mod platform {
+	pub mod vga;
+	pub mod cpu;
+	pub mod mmu;
+	mod io;
+	pub mod keyboard;
+}
+
+#[cfg(target_arch = "x86_64")]
+#[path = "arch/x86_64/"]
 pub mod platform {
 	pub mod vga;
 	pub mod cpu;
