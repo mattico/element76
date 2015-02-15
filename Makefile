@@ -5,7 +5,7 @@ LD?=ld
 RUSTC_FLAGS?=
 KERNEL_RUSTC_FLAGS?=-L bin
 NASM_FLAGS?=
-LD_FLAGS?=--gc-sections
+LD_FLAGS?=--gc-sections -L /usr/local/lib -lcpuid -lc -lm
 
 # Possible Arches:
 # x86

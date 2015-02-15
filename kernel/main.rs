@@ -1,6 +1,7 @@
 use platform::vga::Color;
 use kernel::stdio::StdioWriter;
 use core::fmt::Writer;
+use core::prelude::*;
 
 #[no_mangle]
 pub fn entry() -> !
@@ -21,6 +22,14 @@ fn main()
 	printer.fg = Color::White;
 	printer.go_to(3, 3);
 	printer.print_screen("Hello, World!");
+	match ::cpuid::identify() {
+		Ok(info) => {
+			printer.print_screen(info.vendor);
+			// println!("The full brand string is: {}", info.brand);
+			// println!("Hardware AES support: {}", if info.has_feature(cpuid::CpuFeature::AES) { "yes" } else { "no" });
+		},
+		Err(err) => printer.print_screen(err),
+	};
 }
 
 #[lang = "panic_fmt"]
