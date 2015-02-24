@@ -1,35 +1,81 @@
 RUSTC?=rustc
-CARGO?=cargo
 NASM?=nasm
 LD?=ld
 
-ARCH_DEPENDENCIES=$(wildcard arch/x86/*/*.rs)
-KERNEL_DEPENDENCIES=$(wildcard kernel/*.rs) $(wildcard kernel/*/*.rs)
-RUST_DEPENDENCIES=$(ARCH_DEPENDENCIES) $(KERNEL_DEPENDENCIES) bin/librlibc.rlib
-ASSEMBLIES=$(patsubst %.asm, %.o, $(wildcard arch/x86/asm/*.asm))
-TARGET=i686-unknown-linux-gnu
-RUSTLIB=bin/libkernel.a
-BINARY=bin/kernel.bin
-RUSTC_OPTIONS=--target $(TARGET)
+RUSTC_FLAGS?=
+KERNEL_RUSTC_FLAGS?=-L bin
+NASM_FLAGS?=
+LD_FLAGS?=--gc-sections
 
-all: $(BINARY)
+# Possible Arches:
+# x86
+# x86_64
+ARCH?=x86
+
+ifeq ($(ARCH), x86)
+TARGET=i686-unknown-linux-gnu
+NASM_FLAGS += -f elf32
+LD_FLAGS += -m elf_i386
+QEMU=qemu-system-i386
+else ifeq ($(ARCH), x86_64)
+TARGET=x86_64-unknown-linux-gnu
+NASM_FLAGS += -f elf64
+LD_FLAGS += -m elf_x86_64
+QEMU=qemu-system-x86_64
+endif
+RUSTC_FLAGS += --target $(TARGET) -L rustlib-$(TARGET)
+
+# Recursive Wildcard Function
+rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+
+ARCH_DEPENDENCIES := $(call rwildcard,arch/$(ARCH)/,*.rs)
+KERNEL_DEPENDENCIES := $(call rwildcard,kernel/,*.rs)
+RUST_DEPENDENCIES := $(ARCH_DEPENDENCIES) $(KERNEL_DEPENDENCIES) bin/librlibc.rlib
+ASSEMBLIES := $(patsubst %.asm, %.o, $(call rwildcard,arch/$(ARCH)/,*.asm))
+RUSTLIB := bin/libkernel.a
+DEBUG_BIN := bin/kernel.elf
+RELEASE_BIN := bin/kernel.bin
+BINARY := $(DEBUG_BIN)
+
+all: debug
+
+debug: $(DEBUG_BIN)
+debug: RUSTC_FLAGS += -g
+debug: BINARY := DEBUG_BIN
+
+release: $(RELEASE_BIN)
+release: RUSTC_FLAGS += -O
+release: KERNEL_RUSTC_FLAGS += -C lto
+release: LD_FLAGS += -S
+release: BINARY := RELEASE_BIN
+
+.PHONY: download
+download:
+	./downloadrustlibdir.sh $(TARGET)
 
 .PHONY: run
-run: $(BINARY)
-	qemu-system-i386 -kernel $<
+run: $(DEBUG_BIN)
+	$(QEMU) -curses -kernel $<
+
+.PHONY: release-run
+release-run: $(RELEASE_BIN)
+	$(QEMU) -curses -kernel $<
 
 .PHONY: clean
 clean:
-	$(RM) $(BINARY) *.o $(ASSEMBLIES) $(RUSTLIB) bin/librlibc.rlib
+	$(RM) $(DEBUG_BIN) $(RELEASE_BIN) *.o $(ASSEMBLIES) $(RUSTLIB) bin/librlibc.rlib bin/*.deflate
 
 $(ASSEMBLIES): %.o : %.asm
-	$(NASM) -f elf32 -o $@ $<
+	$(NASM) $(NASM_FLAGS) -o $@ $<
 
-$(RUSTLIB): kernel_x86.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib
-	$(RUSTC) -L rustlibdir -L bin $(RUSTC_OPTIONS) $< --out-dir=bin
+$(RUSTLIB): kernel.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib
+	$(RUSTC) $(RUSTC_FLAGS) $(KERNEL_RUSTC_FLAGS) $< --out-dir=bin
 
-$(BINARY): $(ASSEMBLIES) $(RUSTLIB)
-	$(LD) --gc-sections -m elf_i386 -T link.ld -o $@ $^
+$(RELEASE_BIN): $(ASSEMBLIES) $(RUSTLIB)
+	$(LD) $(LD_FLAGS) -T link.ld -o $@ $^
+
+$(DEBUG_BIN): $(ASSEMBLIES) $(RUSTLIB)
+	$(LD) $(LD_FLAGS) -T link.ld -o $@ $^
 
 bin/librlibc.rlib: rlibc/src/lib.rs
-	$(RUSTC) -L rustlibdir --out-dir=bin --crate-type=rlib --crate-name=rlibc $(RUSTC_OPTIONS) $<
+	$(RUSTC) $(RUSTC_FLAGS) --out-dir=bin --crate-type=rlib --crate-name=rlibc $(RUSTC_OPTIONS) $<
