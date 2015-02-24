@@ -14,17 +14,16 @@ ARCH?=x86
 
 ifeq ($(ARCH), x86)
 TARGET=i686-unknown-linux-gnu
-RUSTC_FLAGS += --target $(TARGET) -L rustlib-$(TARGET)
 NASM_FLAGS += -f elf32
 LD_FLAGS += -m elf_i386
 QEMU=qemu-system-i386
 else ifeq ($(ARCH), x86_64)
 TARGET=x86_64-unknown-linux-gnu
-RUSTC_FLAGS += --target $(TARGET) -L rustlib-$(TARGET)
 NASM_FLAGS += -f elf64
 LD_FLAGS += -m elf_x86_64
 QEMU=qemu-system-x86_64
 endif
+RUSTC_FLAGS += --target $(TARGET) -L rustlib-$(TARGET)
 
 # Recursive Wildcard Function
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
