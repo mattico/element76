@@ -4,7 +4,7 @@ TARGET=$1
 URL="http://static.rust-lang.org/dist/rust-nightly-${TARGET}.tar.gz"
 TARPATH=rust-nightly-${TARGET}/rustc/lib/rustlib/${TARGET}/lib/
 COMPONENTS=6
-FOLDER=rustlibdir
+FOLDER=rustlib-${TARGET}
 
 RUST_TARGET=$(rustc --version --verbose | grep host | awk '{print $2}')
 
