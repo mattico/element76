@@ -1,6 +1,6 @@
 use platform::io;
 use core::prelude::Ok;
-use core::fmt::{Writer, Result};
+use core::fmt::{Write, Result};
 use core::str::StrExt;
 use core::clone::Clone;
 
@@ -59,7 +59,7 @@ pub enum StopBit {
 #[derive(Clone, Copy)]
 pub enum Parity {
 	None	= 0b0000,
-	Odd		= 0b0001,
+	Odd	= 0b0001,
 	Even	= 0b0011,
 	Mark	= 0b0101,
 	Space	= 0b0111,
@@ -145,7 +145,7 @@ impl SerialPort {
 	}
 }
 
-impl Writer for SerialPort {
+impl Write for SerialPort {
 	fn write_str(&mut self, s: &str) -> Result {
 		for c in s.chars() {
 			self.write(c as u8);

@@ -1,9 +1,9 @@
 use kernel::stdio::StdioWriter;
 use platform::vga::Color;
+use platform::serial;
 
 mod timer;
 mod keyboard;
-mod serial;
 
 pub fn handle_interrupt(interrupt_number: u32, error_code: u32)
 {
@@ -11,8 +11,8 @@ pub fn handle_interrupt(interrupt_number: u32, error_code: u32)
 	{
 		0x20 => timer::handle_irq(),
 		0x21 => keyboard::keyboard_irq(),
-		0x22 =>	serial::serial1_irq(),
-		0x23 => serial::serial2_irq(),
+		0x22 =>	serial::interrupt_handler(1),
+		0x23 => serial::interrupt_handler(2),
 		_ => unknown_irq(interrupt_number, error_code),
 	};
 }
