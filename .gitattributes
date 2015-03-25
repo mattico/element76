@@ -1,0 +1,7 @@
+* text eol=lf
+
+*.rs text
+*.ld text
+*.asm text
+Makefile text
+*.sh text
