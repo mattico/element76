@@ -23,7 +23,9 @@ NASM_FLAGS += -f elf64
 LD_FLAGS += -m elf_x86_64
 QEMU=qemu-system-x86_64
 endif
+
 RUSTC_FLAGS += --target $(TARGET) -L rustlib-$(TARGET)
+LD_FLAGS += -T arch/$(ARCH)/link.ld
 
 # Recursive Wildcard Function
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
@@ -72,10 +74,10 @@ $(RUSTLIB): kernel.rs $(RUST_DEPENDENCIES) bin/librlibc.rlib
 	$(RUSTC) $(RUSTC_FLAGS) $(KERNEL_RUSTC_FLAGS) $< --out-dir=bin
 
 $(RELEASE_BIN): $(ASSEMBLIES) $(RUSTLIB)
-	$(LD) $(LD_FLAGS) -T link.ld -o $@ $^
+	$(LD) $(LD_FLAGS) -o $@ $^
 
 $(DEBUG_BIN): $(ASSEMBLIES) $(RUSTLIB)
-	$(LD) $(LD_FLAGS) -T link.ld -o $@ $^
+	$(LD) $(LD_FLAGS) -o $@ $^
 
 bin/librlibc.rlib: rlibc/src/lib.rs
 	$(RUSTC) $(RUSTC_FLAGS) --out-dir=bin --crate-type=rlib --crate-name=rlibc $(RUSTC_OPTIONS) $<
