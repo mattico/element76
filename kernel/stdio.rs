@@ -1,5 +1,4 @@
 use core::prelude::*;
-use core::iter::range_step_inclusive;
 use platform::vga::{Color, COLS, ROWS};
 use platform::vga;
 
@@ -12,6 +11,7 @@ pub struct StdioWriter
 }
 
 impl Copy for StdioWriter {}
+impl Clone for StdioWriter { fn clone(&self) -> Self { *self } }
 
 impl StdioWriter
 {
@@ -140,7 +140,8 @@ impl StdioWriter
 	{
 		self.print_screen("0b");
 
-		for i in range_step_inclusive(sz as i32 - 1, 0, -1)
+		let mut i = (sz - 1) as i32;
+		while i >= 0
 		{
 			let c = match (v >> (i as u32)) & 0x1
 			{
@@ -149,6 +150,7 @@ impl StdioWriter
 			} as u8;
 			self.raw_print_char(c);
 			self.go_right();
+			i -= 1;
 		}
 		self.set_cursor();
 	}
@@ -157,7 +159,8 @@ impl StdioWriter
 	{
 		self.print_screen("0x");
 
-		for i in range_step_inclusive(sz as i32 - 4, 0i32, -4)
+		let mut i = (sz - 4) as i32;
+		while i >= 0
 		{
 			let c = match (v >> (i as u32)) & 0xF
 			{
@@ -166,6 +169,7 @@ impl StdioWriter
 			} as u8;
 			self.raw_print_char(c);
 			self.go_right();
+			i -= 4;
 		}
 		self.set_cursor();
 	}
@@ -179,7 +183,7 @@ impl StdioWriter
 
 	fn raw_print_char(&self, value: u8)
 	{
-		vga::putc(self.xpos, self.ypos, value as u8);
+		vga::putc(self.xpos, self.ypos, value);
 		vga::setfg(self.xpos, self.ypos, self.fg);
 		vga::setbg(self.xpos, self.ypos, self.bg);
 	}
