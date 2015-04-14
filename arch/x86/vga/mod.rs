@@ -1,6 +1,6 @@
-use core::marker::Copy;
 use platform::io;
 
+#[derive(Clone, Copy)]
 pub enum Color {
     Black = 0,
     Blue = 1,
@@ -19,8 +19,6 @@ pub enum Color {
     Yellow = 14,
     White = 15,
 }
-
-impl Copy for Color {}
 
 pub static ROWS: u32 = 25;
 pub static COLS: u32 = 80;

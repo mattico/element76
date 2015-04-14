@@ -3,6 +3,7 @@ use core::iter::range_step_inclusive;
 use platform::vga::{Color, COLS, ROWS};
 use platform::vga;
 
+#[derive(Clone, Copy)]
 pub struct StdioWriter
 {
 	pub xpos: u32,
@@ -10,8 +11,6 @@ pub struct StdioWriter
 	pub fg: Color,
 	pub bg: Color
 }
-
-impl Copy for StdioWriter {}
 
 impl StdioWriter
 {
